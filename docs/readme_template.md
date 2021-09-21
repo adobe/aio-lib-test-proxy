@@ -21,7 +21,7 @@ Modify 'docs/readme_template.md', then run `npm run generate-docs`.
 [![Downloads/week](https://img.shields.io/npm/dw/@adobe/aio-lib-test-proxy.svg)](https://npmjs.org/package/@adobe/aio-lib-test-proxy)
 [![Node.js CI](https://github.com/adobe/aio-lib-test-proxy/actions/workflows/node.js.yml/badge.svg)](https://github.com/adobe/aio-lib-test-proxy/actions/workflows/node.js.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) 
-[![Codecov Coverage](https://img.shields.io/codecov/c/github/adobe/aio-lib-test-proxy/master.svg?style=flat-square)](https://codecov.io/gh/adobe/aio-lib-test-proxy/)
+[![Codecov Coverage](https://img.shields.io/codecov/c/github/adobe/aio-lib-test-proxy/main.svg?style=flat-square)](https://codecov.io/gh/adobe/aio-lib-test-proxy/)
 
 
 # Adobe I/O Lib for Test Proxies and Api Servers
