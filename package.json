@@ -27,7 +27,7 @@
     "eslint-plugin-standard": "^4.0.0",
     "fetch-mock": "^9.0.0",
     "http-proxy-agent": "^4.0.1",
-    "https-proxy-agent": "^2.2.4",
+    "https-proxy-agent": "2.2.4",
     "jest": "^25.1.0",
     "jest-fetch-mock": "^3.0.1",
     "jest-html-reporter": "^3.4.1",
