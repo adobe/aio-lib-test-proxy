@@ -51,6 +51,7 @@ const response = await fetch('http://localhost:3000/post', {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ foo: 'bar' })
 })
+apiServer.close()
 ```
 
 ## Functions
