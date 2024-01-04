@@ -11,7 +11,7 @@ governing permissions and limitations under the License.
 
 const queryString = require('query-string')
 const { createHttpsProxy, createHttpProxy } = require('../src/proxy')
-const { createApiServer } = require('../src/api-server')
+const { createApiServer, HOSTNAME } = require('../src/api-server')
 const fetch = require('node-fetch')
 const HttpsProxyAgent = require('https-proxy-agent')
 const HttpProxyAgent = require('http-proxy-agent')
@@ -64,7 +64,7 @@ describe('http proxy', () => {
       const apiServerAddress = apiServer.address()
       const queryObject = { foo: 'bar' }
 
-      const testUrl = `${protocol}://localhost:${apiServerAddress.port}/mirror?${queryString.stringify(queryObject)}`
+      const testUrl = `${protocol}://${HOSTNAME}:${apiServerAddress.port}/mirror?${queryString.stringify(queryObject)}`
 
       const proxyUrl = proxyServer.url
       const proxyOpts = urlToHttpOptions(proxyUrl)
@@ -78,7 +78,7 @@ describe('http proxy', () => {
 
     test('failure', async () => {
       // connect to non-existent server port
-      const testUrl = `${protocol}://localhost:${portNotInUse}/mirror/?foo=bar`
+      const testUrl = `${protocol}://${HOSTNAME}:${portNotInUse}/mirror/?foo=bar`
 
       const proxyUrl = proxyServer.url
       const proxyOpts = urlToHttpOptions(proxyUrl)
@@ -114,7 +114,7 @@ describe('http proxy', () => {
       const proxyOpts = urlToHttpOptions(proxyUrl)
       proxyOpts.auth = `${username}:${password}`
 
-      const testUrl = `${protocol}://localhost:${apiServerPort}/mirror?${queryString.stringify(queryObject)}`
+      const testUrl = `${protocol}://${HOSTNAME}:${apiServerPort}/mirror?${queryString.stringify(queryObject)}`
       const response = await fetch(testUrl, {
         agent: new HttpProxyAgent(proxyOpts),
         headers
@@ -138,7 +138,7 @@ describe('http proxy', () => {
       const proxyOpts = urlToHttpOptions(proxyUrl)
       proxyOpts.auth = `${username}:${password}`
 
-      const testUrl = `${protocol}://localhost:${apiServerPort}/mirror?${queryString.stringify(queryObject)}`
+      const testUrl = `${protocol}://${HOSTNAME}:${apiServerPort}/mirror?${queryString.stringify(queryObject)}`
       const response = await fetch(testUrl, {
         agent: new HttpProxyAgent(proxyOpts),
         headers
@@ -170,7 +170,7 @@ describe('https proxy', () => {
       const apiServerAddress = apiServer.address()
       const queryObject = { foo: 'bar' }
 
-      const testUrl = `${protocol}://localhost:${apiServerAddress.port}/mirror?${queryString.stringify(queryObject)}`
+      const testUrl = `${protocol}://${HOSTNAME}:${apiServerAddress.port}/mirror?${queryString.stringify(queryObject)}`
 
       const proxyUrl = proxyServer.url
       const proxyOpts = urlToHttpOptions(proxyUrl)
@@ -188,7 +188,7 @@ describe('https proxy', () => {
 
     test('failure', async () => {
       // connect to non-existent server port
-      const testUrl = `${protocol}://localhost:${portNotInUse}/mirror/?foo=bar`
+      const testUrl = `${protocol}://${HOSTNAME}:${portNotInUse}/mirror/?foo=bar`
 
       const proxyUrl = proxyServer.url
       const proxyOpts = urlToHttpOptions(proxyUrl)
@@ -231,7 +231,7 @@ describe('https proxy', () => {
       // this is only used for unit-tests and passed in the constructor
       proxyOpts.rejectUnauthorized = false
 
-      const testUrl = `${protocol}://localhost:${apiServerPort}/mirror?${queryString.stringify(queryObject)}`
+      const testUrl = `${protocol}://${HOSTNAME}:${apiServerPort}/mirror?${queryString.stringify(queryObject)}`
       const response = await fetch(testUrl, {
         agent: new HttpsProxyAgent(proxyOpts),
         headers
@@ -257,7 +257,7 @@ describe('https proxy', () => {
       // this is only used for unit-tests and passed in the constructor
       proxyOpts.rejectUnauthorized = false
 
-      const testUrl = `${protocol}://localhost:${apiServerPort}/mirror?${queryString.stringify(queryObject)}`
+      const testUrl = `${protocol}://${HOSTNAME}:${apiServerPort}/mirror?${queryString.stringify(queryObject)}`
       const response = await fetch(testUrl, {
         agent: new HttpsProxyAgent(proxyOpts),
         headers

@@ -14,6 +14,7 @@ const express = require('express')
 const mockttp = require('mockttp')
 const https = require('https')
 const http = require('http')
+const HOSTNAME = '127.0.0.1'
 
 /**
  * Create a simple API server.
@@ -50,9 +51,9 @@ async function createApiServer (options = {}) {
   if (useSsl) {
     const httpsOptions = await mockttp.generateCACertificate()
 
-    server = https.createServer(httpsOptions, app).listen(port, 'localhost')
+    server = https.createServer(httpsOptions, app).listen(port, HOSTNAME)
   } else {
-    server = http.createServer(app).listen(port, 'localhost')
+    server = http.createServer(app).listen(port, HOSTNAME)
   }
 
   return new Promise(resolve => {
@@ -64,5 +65,6 @@ async function createApiServer (options = {}) {
 }
 
 module.exports = {
+  HOSTNAME,
   createApiServer
 }
