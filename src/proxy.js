@@ -80,7 +80,7 @@ async function generateCertAndAddToRootCAs () {
  */
 function setupServerRules (server, httpOptions) {
   const { useBasicAuth = false, username = 'admin', password = 'secret' } = httpOptions
-  const passThroughOptions = { ignoreHostHttpsErrors: ['localhost', '127.0.0.1', '[::1]'] }
+  const passThroughOptions = { ignoreHostHttpsErrors: ['localhost', '127.0.0.1'] }
 
   if (!useBasicAuth) {
     server.anyRequest().thenPassThrough(passThroughOptions)
