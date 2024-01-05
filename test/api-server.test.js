@@ -39,7 +39,7 @@ describe('http', () => {
       abc: '123'
     }
 
-    const testUrl = `${protocol}://${apiServerAddress.address}:${apiServerAddress.port}/mirror?${queryString.stringify(queryObject)}`
+    const testUrl = `${protocol}://[${apiServerAddress.address}]:${apiServerAddress.port}/mirror?${queryString.stringify(queryObject)}`
     const response = await fetch(testUrl)
     const json = await response.json()
     expect(json).toStrictEqual(queryObject)
@@ -47,7 +47,7 @@ describe('http', () => {
 
   test('post success', async () => {
     const body = { some: 'data' }
-    const testUrl = `${protocol}://${apiServerAddress.address}:${apiServerAddress.port}/post`
+    const testUrl = `${protocol}://[${apiServerAddress.address}]:${apiServerAddress.port}/post`
     const response = await fetch(testUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -78,7 +78,7 @@ describe('https', () => {
       abc: '123'
     }
 
-    const testUrl = `${protocol}://${apiServerAddress.address}:${apiServerAddress.port}/mirror?${queryString.stringify(queryObject)}`
+    const testUrl = `${protocol}://[${apiServerAddress.address}]:${apiServerAddress.port}/mirror?${queryString.stringify(queryObject)}`
     const response = await fetch(testUrl, {
       agent: new https.Agent({
         rejectUnauthorized: false
@@ -90,7 +90,7 @@ describe('https', () => {
 
   test('post success', async () => {
     const body = { some: 'data' }
-    const testUrl = `${protocol}://${apiServerAddress.address}:${apiServerAddress.port}/post`
+    const testUrl = `${protocol}://[${apiServerAddress.address}]:${apiServerAddress.port}/post`
     const response = await fetch(testUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
