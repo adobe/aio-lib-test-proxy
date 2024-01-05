@@ -177,6 +177,7 @@ describe('https proxy', () => {
       // the passing on of this property to the underlying implementation only works on https-proxy-agent@2.2.4
       // this is only used for unit-tests and passed in the constructor
       proxyOpts.rejectUnauthorized = false
+      proxyOpts.ALPNProtocols = ['http/1.1']
 
       const response = await fetch(testUrl, {
         agent: new HttpsProxyAgent(proxyOpts)
@@ -195,6 +196,7 @@ describe('https proxy', () => {
       // the passing on of this property to the underlying implementation only works on https-proxy-agent@2.2.4
       // this is only used for unit-tests and passed in the constructor
       proxyOpts.rejectUnauthorized = false
+      proxyOpts.ALPNProtocols = ['http/1.1']
 
       const response = await fetch(testUrl, {
         agent: new HttpsProxyAgent(proxyOpts)
@@ -230,6 +232,7 @@ describe('https proxy', () => {
       // the passing on of this property to the underlying implementation only works on https-proxy-agent@2.2.4
       // this is only used for unit-tests and passed in the constructor
       proxyOpts.rejectUnauthorized = false
+      proxyOpts.ALPNProtocols = ['http/1.1']
 
       const testUrl = `${protocol}://${HOSTNAME}:${apiServerPort}/mirror?${queryString.stringify(queryObject)}`
       const response = await fetch(testUrl, {
@@ -256,6 +259,7 @@ describe('https proxy', () => {
       // the passing on of this property to the underlying implementation only works on https-proxy-agent@2.2.4
       // this is only used for unit-tests and passed in the constructor
       proxyOpts.rejectUnauthorized = false
+      proxyOpts.ALPNProtocols = ['http/1.1']
 
       const testUrl = `${protocol}://${HOSTNAME}:${apiServerPort}/mirror?${queryString.stringify(queryObject)}`
       const response = await fetch(testUrl, {
