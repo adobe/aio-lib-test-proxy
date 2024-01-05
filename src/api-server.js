@@ -14,7 +14,7 @@ const express = require('express')
 const mockttp = require('mockttp')
 const https = require('https')
 const http = require('http')
-const HOSTNAME = '127.0.0.1'
+const HOSTNAME = 'localhost'
 
 /**
  * Create a simple API server.
