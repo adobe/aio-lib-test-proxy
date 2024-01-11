@@ -4,7 +4,7 @@
   },
   "bundleDependencies": [],
   "dependencies": {
-    "@adobe/aio-lib-core-logging": "1.1.0",
+    "@adobe/aio-lib-core-logging": "^3",
     "express": "^4.17.1",
     "mockttp": "^2.2.3",
     "node-fetch": "^2.6.4",
