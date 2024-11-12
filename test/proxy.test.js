@@ -10,12 +10,15 @@ governing permissions and limitations under the License.
 */
 
 const queryString = require('query-string')
-const { createHttpsProxy, createHttpProxy } = require('../src/proxy')
+const { createHttpsProxy, createHttpProxy, generateCert } = require('../src/proxy')
 const { createApiServer, HOSTNAME } = require('../src/api-server')
 const fetch = require('node-fetch')
 const HttpsProxyAgent = require('https-proxy-agent')
 const HttpProxyAgent = require('http-proxy-agent')
 const url = require('url')
+const syswidecas = require('syswide-cas')
+
+jest.mock('syswide-cas')
 
 /**
  * Converts a URL to a suitable object for http request options.
@@ -154,10 +157,11 @@ describe('https proxy', () => {
   const protocol = 'https'
   let proxyServer, apiServer
   const portNotInUse = 3009
+  const selfSigned = true
 
-  describe('no auth', () => {
+  describe('no auth (self-signed)', () => {
     beforeAll(async () => {
-      proxyServer = await createHttpsProxy()
+      proxyServer = await createHttpsProxy({ selfSigned })
       apiServer = await createApiServer({ port: 3001, useSsl: true })
     })
 
@@ -176,15 +180,25 @@ describe('https proxy', () => {
       const proxyOpts = urlToHttpOptions(proxyUrl)
       // the passing on of this property to the underlying implementation only works on https-proxy-agent@2.2.4
       // this is only used for unit-tests and passed in the constructor
-      proxyOpts.rejectUnauthorized = false
       proxyOpts.ALPNProtocols = ['http/1.1']
+      // IGNORE self-signed certs
+      {
+        proxyOpts.rejectUnauthorized = false
+        const response = await fetch(testUrl, {
+          agent: new HttpsProxyAgent(proxyOpts)
+        })
 
-      const response = await fetch(testUrl, {
-        agent: new HttpsProxyAgent(proxyOpts)
-      })
-
-      const json = await response.json()
-      expect(json).toStrictEqual(queryObject)
+        const json = await response.json()
+        expect(json).toStrictEqual(queryObject)
+      }
+      // DO NOT IGNORE self-signed certs
+      {
+        proxyOpts.rejectUnauthorized = true
+        const proxyFetch = fetch(testUrl, {
+          agent: new HttpsProxyAgent(proxyOpts)
+        })
+        await expect(proxyFetch).rejects.toThrow('self-signed certificate in certificate chain')
+      }
     })
 
     test('failure', async () => {
@@ -195,20 +209,31 @@ describe('https proxy', () => {
       const proxyOpts = urlToHttpOptions(proxyUrl)
       // the passing on of this property to the underlying implementation only works on https-proxy-agent@2.2.4
       // this is only used for unit-tests and passed in the constructor
-      proxyOpts.rejectUnauthorized = false
       proxyOpts.ALPNProtocols = ['http/1.1']
 
-      const response = await fetch(testUrl, {
-        agent: new HttpsProxyAgent(proxyOpts)
-      })
-      expect(response.ok).toEqual(false)
-      expect(response.status).toEqual(502)
+      // IGNORE self-signed certs
+      {
+        proxyOpts.rejectUnauthorized = false
+        const response = await fetch(testUrl, {
+          agent: new HttpsProxyAgent(proxyOpts)
+        })
+        expect(response.ok).toEqual(false)
+        expect(response.status).toEqual(502)
+      }
+      // DO NOT IGNORE self-signed certs
+      {
+        proxyOpts.rejectUnauthorized = true
+        const proxyFetch = fetch(testUrl, {
+          agent: new HttpsProxyAgent(proxyOpts)
+        })
+        await expect(proxyFetch).rejects.toThrow('self-signed certificate in certificate chain')
+      }
     })
   })
 
   describe('basic auth', () => {
     beforeAll(async () => {
-      proxyServer = await createHttpsProxy({ useBasicAuth: true })
+      proxyServer = await createHttpsProxy({ useBasicAuth: true, selfSigned })
       apiServer = await createApiServer({ port: 3001, useSsl: true })
     })
 
@@ -231,17 +256,28 @@ describe('https proxy', () => {
       proxyOpts.auth = `${username}:${password}`
       // the passing on of this property to the underlying implementation only works on https-proxy-agent@2.2.4
       // this is only used for unit-tests and passed in the constructor
-      proxyOpts.rejectUnauthorized = false
+      const testUrl = `${protocol}://${HOSTNAME}:${apiServerPort}/mirror?${queryString.stringify(queryObject)}`
       proxyOpts.ALPNProtocols = ['http/1.1']
 
-      const testUrl = `${protocol}://${HOSTNAME}:${apiServerPort}/mirror?${queryString.stringify(queryObject)}`
-      const response = await fetch(testUrl, {
-        agent: new HttpsProxyAgent(proxyOpts),
-        headers
-      })
-      expect(response.ok).toEqual(true)
-      const json = await response.json()
-      expect(json).toStrictEqual(queryObject)
+      // IGNORE self-signed certs
+      {
+        proxyOpts.rejectUnauthorized = false
+        const response = await fetch(testUrl, {
+          agent: new HttpsProxyAgent(proxyOpts),
+          headers
+        })
+        expect(response.ok).toEqual(true)
+        const json = await response.json()
+        expect(json).toStrictEqual(queryObject)
+      }
+      // DO NOT IGNORE self-signed certs
+      {
+        proxyOpts.rejectUnauthorized = true
+        const proxyFetch = fetch(testUrl, {
+          agent: new HttpsProxyAgent(proxyOpts)
+        })
+        await expect(proxyFetch).rejects.toThrow('self-signed certificate in certificate chain')
+      }
     })
 
     test('failure', async () => {
@@ -258,16 +294,52 @@ describe('https proxy', () => {
       proxyOpts.auth = `${username}:${password}`
       // the passing on of this property to the underlying implementation only works on https-proxy-agent@2.2.4
       // this is only used for unit-tests and passed in the constructor
-      proxyOpts.rejectUnauthorized = false
+      const testUrl = `${protocol}://${HOSTNAME}:${apiServerPort}/mirror?${queryString.stringify(queryObject)}`
       proxyOpts.ALPNProtocols = ['http/1.1']
 
-      const testUrl = `${protocol}://${HOSTNAME}:${apiServerPort}/mirror?${queryString.stringify(queryObject)}`
-      const response = await fetch(testUrl, {
-        agent: new HttpsProxyAgent(proxyOpts),
-        headers
-      })
-      expect(response.ok).toEqual(false)
-      expect(response.status).toEqual(403)
+      // IGNORE self-signed certs
+      {
+        proxyOpts.rejectUnauthorized = false
+        const response = await fetch(testUrl, {
+          agent: new HttpsProxyAgent(proxyOpts),
+          headers
+        })
+        expect(response.ok).toEqual(false)
+        expect(response.status).toEqual(403)
+      }
+      // DO NOT IGNORE self-signed certs
+      {
+        proxyOpts.rejectUnauthorized = true
+        const proxyFetch = fetch(testUrl, {
+          agent: new HttpsProxyAgent(proxyOpts)
+        })
+        await expect(proxyFetch).rejects.toThrow('self-signed certificate in certificate chain')
+      }
     })
+  })
+
+  test('createHttpsProxy (default options)', async () => {
+    syswidecas.addCAs.mockRestore()
+
+    proxyServer = await createHttpsProxy()
+    await proxyServer.stop()
+
+    expect(syswidecas.addCAs).toHaveBeenCalled()
+  })
+})
+
+describe('generateCert', () => {
+  beforeEach(() => {
+    syswidecas.addCAs.mockRestore()
+  })
+
+  test('default (add root CAs)', async () => {
+    await generateCert()
+    expect(syswidecas.addCAs).toHaveBeenCalled()
+  })
+
+  test('do not add root CAs', async () => {
+    await generateCert({ addToRootCAs: false })
+    expect(syswidecas.addCAs).not.toHaveBeenCalled()
   })
 })
