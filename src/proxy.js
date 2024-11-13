@@ -22,6 +22,7 @@ const os = require('os')
  * @typedef {object} HttpOptions the http proxy options
  * @property {number} port the port to use
  * @property {boolean} useBasicAuth use basic authorization
+ * @property {boolean} [selfSigned=false] use self-signed certs
  * @property {boolean} [username=admin] the username for basic authorization
  * @property {boolean} [password=secret] the password for basic authorization
  */
@@ -48,21 +49,27 @@ async function createHttpProxy (httpOptions = {}) {
 }
 
 /**
- * Generate certs for SSL, and add it to the root CAs temporarily.
- * This prevents any self-signed cert errors for tests when using the https proxy.
+ * Generate certs for SSL, and add it to the root CAs.
+ * If added to the root CAs, this prevents any self-signed cert errors for tests when using the https proxy.
  *
  * @private
+ * @param {object} options the options
+ * @param {boolean} options.addToRootCAs defaults to true to add the cert to the root CAs temporarily
  * @returns {object} the https object containing the cert and key
  */
-async function generateCertAndAddToRootCAs () {
+async function generateCert (options = {}) {
+  const { addToRootCAs = true } = options
+
   const https = await mockttp.generateCACertificate()
 
   const tmpFolder = await mkdtemp(path.join(os.tmpdir(), 'test-proxy-'))
   const certPath = path.join(tmpFolder, 'server.crt')
   await writeFile(certPath, https.cert)
 
-  const syswidecas = require('syswide-cas')
-  syswidecas.addCAs(certPath)
+  if (addToRootCAs) {
+    const syswidecas = require('syswide-cas')
+    syswidecas.addCAs(certPath)
+  }
 
   return https
 }
@@ -83,15 +90,15 @@ function setupServerRules (server, httpOptions) {
   const passThroughOptions = { ignoreHostHttpsErrors: ['localhost', '127.0.0.1'] }
 
   if (!useBasicAuth) {
-    server.anyRequest().thenPassThrough(passThroughOptions)
+    server.forAnyRequest().thenPassThrough(passThroughOptions)
   } else {
     const authorization = 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64')
     // this rule makes the request pass through (authorization correct)
-    server.anyRequest()
+    server.forAnyRequest()
       .withHeaders({ 'Proxy-Authorization': authorization })
       .thenPassThrough(passThroughOptions)
     // this rule makes any other request fail
-    server.anyRequest().thenReply(403)
+    server.forAnyRequest().thenReply(403)
   }
 
   return server
@@ -110,8 +117,9 @@ function setupServerRules (server, httpOptions) {
  * @returns {Promise<mockttp.Mockttp>} the proxy server instance
  */
 async function createHttpsProxy (httpOptions = {}) {
-  const { port = 8081 } = httpOptions
-  const https = await generateCertAndAddToRootCAs()
+  const { port = 8081, selfSigned = false } = httpOptions
+
+  const https = await generateCert({ addToRootCAs: !selfSigned })
   const server = mockttp.getLocal({ https })
 
   setupServerRules(server, httpOptions)
@@ -123,6 +131,7 @@ async function createHttpsProxy (httpOptions = {}) {
 }
 
 module.exports = {
+  generateCert,
   createHttpProxy,
   createHttpsProxy
 }
